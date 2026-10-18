@@ -56,7 +56,7 @@
             position: relative;
         }
         
-        /* Блок игрока (Ник, ID, Баланс) — сделал его более заметным */
+        /* Блок игрока (Ник, ID, Баланс) */
         .user-info { 
             position: absolute; top: 20px; right: 20px; 
             display: flex; flex-direction: column; align-items: flex-end;
@@ -66,8 +66,8 @@
             background: rgba(20, 20, 30, 0.9);
             padding: 15px 20px;
             border-radius: 12px;
-            border: 2px solid #ffd700; /* Золотая рамка */
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); /* Золотое свечение */
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
             margin-bottom: 10px;
             text-align: right;
             font-size: 0.9rem;
@@ -85,18 +85,60 @@
         }
         #display-balance { color: #fff; text-shadow: 0 0 8px #ffd700; }
         
-        .btn-logout { 
+        .btn-logout, .btn-shop { 
             background: transparent; border: 1px solid #555; color: #aaa; 
-            padding: 5px 15px; border-radius: 5px; cursor: pointer; 
-            font-size: 0.8rem; transition: 0.3s; 
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; 
+            font-size: 0.9rem; transition: 0.3s; margin-bottom: 5px; width: 100%;
         }
+        .btn-shop { border-color: #00f2fe; color: #00f2fe; }
+        .btn-shop:hover { background: rgba(0,242,254,0.1); box-shadow: 0 0 15px rgba(0,242,254,0.4); }
         .btn-logout:hover { border-color: #ff2e63; color: #ff2e63; box-shadow: 0 0 10px rgba(255,46,99,0.3); }
 
         /* Центральный текст игры */
         h1 { 
             font-size: 4rem; text-transform: uppercase; 
             text-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe, 0 0 40px #ff2e63; 
+            margin-bottom: 20px;
         }
+        
+        /* --- МАГАЗИН (МОДАЛЬНОЕ ОКНО) --- */
+        #shop-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .shop-content {
+            background: rgba(15, 15, 25, 0.95); padding: 30px; border-radius: 20px;
+            border: 2px solid #00f2fe; box-shadow: 0 0 40px rgba(0, 242, 254, 0.3);
+            width: 90%; max-width: 900px; position: relative;
+        }
+        .shop-content h2 { text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px #00f2fe; }
+        .shop-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
+        }
+        .shop-item {
+            background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px;
+            border: 1px solid #333; text-align: center; transition: 0.3s;
+        }
+        .shop-item:hover { border-color: #ff2e63; box-shadow: 0 0 15px rgba(255,46,99,0.3); }
+        .shop-item img {
+            width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;
+            border: 1px solid #444;
+        }
+        .shop-item h3 { font-size: 1.1rem; margin-bottom: 5px; }
+        .shop-item .price { color: #ffd700; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; text-shadow: 0 0 10px #ffd700; }
+        .buy-skin-btn {
+            background: #00f2fe; color: #000; border: none; padding: 8px 15px; border-radius: 5px;
+            font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;
+        }
+        .buy-skin-btn:hover { background: #fff; box-shadow: 0 0 15px #00f2fe; }
+        
+        .close-shop {
+            position: absolute; top: 15px; right: 20px; font-size: 1.5rem;
+            cursor: pointer; color: #ff2e63; transition: 0.3s;
+        }
+        .close-shop:hover { text-shadow: 0 0 10px #ff2e63; transform: scale(1.2); }
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -132,51 +174,56 @@
                     💰 Баланс: <span id="display-balance">Загрузка...</span> GC
                 </div>
             </div>
+            <button class="btn-shop" onclick="openShop()">🛒 Магазин скинов</button>
             <button class="btn-logout" onclick="logout()">Выйти</button>
         </div>
         
         <!-- Центральная часть -->
         <h1>Neon Game</h1>
-        <p style="margin-top:20px; color:#aaa;">Добро пожаловать на арену!</p>
+        <p style="color:#aaa;">Твой текущий скин: <span id="current-skin-name" style="color:#00f2fe;">Стандартный</span></p>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО МАГАЗИНА -->
+    <div id="shop-modal">
+        <div class="shop-content">
+            <span class="close-shop" onclick="closeShop()">✖</span>
+            <h2>Неоновый Магазин</h2>
+            <div class="shop-grid" id="shop-grid">
+                <!-- Сюда JS сгенерирует товары -->
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- ЛОГИКА АВТОРИЗАЦИИ И БАЗЫ ДАННЫХ ---
-        
+        // --- БАЗА ДАННЫХ МАГАЗИНА ---
+        // Твои загруженные картинки: ф.jpg, ы.jpg, a.jpg
+        const shopItems = [
+            { id: "skin1", name: "Скин 1 (Ф)", price: 5e99, img: "ф.jpg" },
+            { id: "skin2", name: "Скин 2 (Ы)", price: 2e100, img: "ы.jpg" },
+            { id: "skin3", name: "Скин 3 (А)", price: 5e100, img: "a.jpg" }
+        ];
+
         let isLoginMode = true; 
 
-        // Функция для красивого отображения чисел
+        // Форматирование чисел (Гуголы и т.д.)
         function formatNumber(num) {
-            if (num >= 1e6) {
-                return num.toExponential(2); 
-            }
+            if (num >= 1e6) return num.toExponential(2); 
             return num.toFixed(2);
         }
 
+        // --- АВТОРИЗАЦИЯ ---
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
-            const title = document.getElementById("auth-title");
-            const mainBtn = document.getElementById("main-btn");
-            const switchBtn = document.getElementById("switch-btn");
-
-            if (isLoginMode) {
-                title.innerText = "Вход в игру";
-                mainBtn.innerText = "Войти";
-                switchBtn.innerText = "У меня нет аккаунта (Регистрация)";
-            } else {
-                title.innerText = "Регистрация";
-                mainBtn.innerText = "Создать аккаунт";
-                switchBtn.innerText = "Уже есть аккаунт (Вход)";
-            }
+            document.getElementById("auth-title").innerText = isLoginMode ? "Вход в игру" : "Регистрация";
+            document.getElementById("main-btn").innerText = isLoginMode ? "Войти" : "Создать аккаунт";
+            document.getElementById("switch-btn").innerText = isLoginMode ? "У меня нет аккаунта (Регистрация)" : "Уже есть аккаунт (Вход)";
         }
 
         function handleAuth() {
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value;
 
-            if (!username || !password) {
-                return alert("Заполните все поля!");
-            }
+            if (!username || !password) return alert("Заполните все поля!");
 
             let usersDB = JSON.parse(localStorage.getItem("neon_users")) || {};
 
@@ -184,23 +231,20 @@
                 const user = usersDB[username];
                 if (!user) return alert("Такого игрока не существует!");
                 if (user.password !== password) return alert("Неверный пароль!");
-
                 loginSuccess(username, user.id);
             } else {
-                if (usersDB[username]) return alert("Этот ник уже занят! Придумайте другой.");
-
+                if (usersDB[username]) return alert("Этот ник уже занят!");
                 let newId = Date.now().toString().slice(-10);
-                if (Object.values(usersDB).some(u => u.id === newId)) {
-                    newId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-                }
-
-                // ГУГОЛ! 1 и 100 нулей (1e100)
-                const startBalance = 1e100; 
-
-                // Сохраняем пользователя
-                usersDB[username] = { password: password, id: newId, balance: startBalance };
+                if (Object.values(usersDB).some(u => u.id === newId)) newId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+                
+                usersDB[username] = { 
+                    password: password, 
+                    id: newId, 
+                    balance: 1e100, // 1 Гугол
+                    ownedSkins: [], // Купленные скины
+                    activeSkin: "Стандартный" 
+                };
                 localStorage.setItem("neon_users", JSON.stringify(usersDB));
-
                 alert(`Аккаунт создан! Ваш ID: ${newId}`);
                 loginSuccess(username, newId);
             }
@@ -208,24 +252,25 @@
 
         function loginSuccess(username, id) {
             localStorage.setItem("neon_currentUser", JSON.stringify({ username, id }));
-
             const usersDB = JSON.parse(localStorage.getItem("neon_users")) || {};
             const user = usersDB[username];
             
-            // Если у старого аккаунта нет баланса, выдаем Гугол
-            if (user.balance === undefined) {
-                user.balance = 1e100;
-                localStorage.setItem("neon_users", JSON.stringify(usersDB));
-            }
+            if (user.balance === undefined) user.balance = 1e100;
+            if (!user.ownedSkins) user.ownedSkins = [];
+            if (!user.activeSkin) user.activeSkin = "Стандартный";
+            localStorage.setItem("neon_users", JSON.stringify(usersDB));
 
             document.getElementById("auth-screen").classList.add("hidden");
             document.getElementById("game-screen").style.display = "flex";
             
+            updateUI(username, user);
+        }
+
+        function updateUI(username, user) {
             document.getElementById("display-name").innerText = username;
-            document.getElementById("display-id").innerText = id;
-            
-            // Выводим отформатированный баланс
+            document.getElementById("display-id").innerText = user.id;
             document.getElementById("display-balance").innerText = formatNumber(user.balance);
+            document.getElementById("current-skin-name").innerText = user.activeSkin;
         }
 
         function logout() {
@@ -233,10 +278,80 @@
             location.reload(); 
         }
 
+        // --- МАГАЗИН ---
+        function openShop() {
+            renderShop();
+            document.getElementById("shop-modal").style.display = "flex";
+        }
+
+        function closeShop() {
+            document.getElementById("shop-modal").style.display = "none";
+        }
+
+        function renderShop() {
+            const grid = document.getElementById("shop-grid");
+            grid.innerHTML = "";
+            
+            const usersDB = JSON.parse(localStorage.getItem("neon_users")) || {};
+            const currentUser = JSON.parse(localStorage.getItem("neon_currentUser"));
+            const user = usersDB[currentUser.username];
+
+            shopItems.forEach(item => {
+                const isOwned = user.ownedSkins.includes(item.name);
+                const isActive = user.activeSkin === item.name;
+
+                grid.innerHTML += `
+                    <div class="shop-item">
+                        <img src="${item.img}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/200x150/1a0033/00f2fe?text=No+Image'">
+                        <h3>${item.name}</h3>
+                        <div class="price">${formatNumber(item.price)} GC</div>
+                        <button class="buy-skin-btn" onclick="buySkin('${item.name}', ${item.price})" 
+                            ${isActive ? 'disabled style="background:#555; cursor:not-allowed;"' : ''}>
+                            ${isActive ? 'Активен' : (isOwned ? 'Выбрать' : 'Купить')}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function buySkin(skinName, price) {
+            const usersDB = JSON.parse(localStorage.getItem("neon_users")) || {};
+            const currentUser = JSON.parse(localStorage.getItem("neon_currentUser"));
+            const user = usersDB[currentUser.username];
+
+            // Если скин уже куплен, просто надеваем его
+            if (user.ownedSkins.includes(skinName)) {
+                user.activeSkin = skinName;
+                localStorage.setItem("neon_users", JSON.stringify(usersDB));
+                updateUI(currentUser.username, user);
+                renderShop();
+                return;
+            }
+
+            // Если не куплен — проверяем баланс
+            if (user.balance < price) {
+                return alert("Недостаточно средств! У тебя не хватает Гуголов.");
+            }
+
+            // Покупка
+            user.balance -= price;
+            user.ownedSkins.push(skinName);
+            user.activeSkin = skinName;
+            localStorage.setItem("neon_users", JSON.stringify(usersDB));
+            
+            alert(`Успешно куплено: ${skinName}!`);
+            updateUI(currentUser.username, user);
+            renderShop();
+        }
+
+        // Загрузка при старте
         window.onload = () => {
             const currentUser = JSON.parse(localStorage.getItem("neon_currentUser"));
             if (currentUser) {
-                loginSuccess(currentUser.username, currentUser.id);
+                const usersDB = JSON.parse(localStorage.getItem("neon_users")) || {};
+                if (usersDB[currentUser.username]) {
+                    loginSuccess(currentUser.username, currentUser.id);
+                }
             }
         };
     </script>
