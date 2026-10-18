@@ -201,43 +201,30 @@
         
         <!-- Витрина с купленными скинами -->
         <div id="inventory-display">
-            <p style="color:#666;">Загрузка твоих скинов...</p>
+            <p style="color:#666;">Загрузка твоих домов...</p>
         </div>
 
-        <button class="shop-btn-center" onclick="openShop()">🛒 Магазин скинов</button>
+        <button class="shop-btn-center" onclick="openShop()">🛒 Магазин домов</button>
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО МАГАЗИНА -->
     <div id="shop-modal">
         <div class="shop-content">
             <span class="close-shop" onclick="closeShop()">✖</span>
-            <h2>Неоновый Магазин</h2>
+            <h2>Неоновый Магазин Недвижимости</h2>
             <div class="shop-grid" id="shop-grid"></div>
         </div>
     </div>
 
     <script>
-        // --- БАЗА ДАННЫХ МАГАЗИНА (КРАСИВЫЕ НАЗВАНИЯ) ---
+        // --- БАЗА ДАННЫХ МАГАЗИНА (ФИКСИРОВАННЫЕ ЦЕНЫ И КРАСИВЫЕ НАЗВАНИЯ) ---
         const shopItems = [
-            { id: "skin1", name: "Неоновый Дом", img: "ф.jpg" },
-            { id: "skin2", name: "Кибер-Вилла", img: "ы.jpg" },
-            { id: "skin3", name: "Плазменный Особняк", img: "a.jpg" }
+            { id: "house1", name: "Уютный Домик", price: 50, img: "ф.jpg" },
+            { id: "house2", name: "Современная Вилла", price: 150, img: "ы.jpg" },
+            { id: "house3", name: "Небоскреб Пентхаус", price: 500, img: "a.jpg", fallbackImg: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
         ];
 
         let isLoginMode = true; 
-        let currentPrices = {}; // Здесь будут храниться рандомные цены на текущую сессию
-
-        // Функция генерации случайной цены от 1 до 1 Гугола (1e100)
-        function getRandomPrice() {
-            // Генерируем случайное число от 1 до 1e100
-            // Math.random() дает от 0 до 1. Возводим 10 в случайную степень от 0 до 100.
-            let power = Math.random() * 100;
-            let price = Math.pow(10, power);
-            
-            // Округляем до целого, чтобы не было дробей, если число маленькое
-            if (price < 100) return Math.floor(price) + 1; // Чтобы точно было от 1
-            return price;
-        }
 
         function formatNumber(num) {
             if (num >= 1e6) return num.toExponential(2); 
@@ -270,16 +257,16 @@
                 let newId = Date.now().toString().slice(-10);
                 if (Object.values(usersDB).some(u => u.id === newId)) newId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
                 
-                // СТАРТОВЫЙ БАЛАНС - 1 ГУГОЛ
+                // СТАРТОВЫЙ БАЛАНС - 1000 GC (чтобы хватило на все дома)
                 usersDB[username] = { 
                     password: password, 
                     id: newId, 
-                    balance: 1e100, 
+                    balance: 1000, 
                     ownedSkins: [],
                     activeSkin: "Стандартный" 
                 };
                 localStorage.setItem("neon_users", JSON.stringify(usersDB));
-                alert(`Аккаунт создан! Ваш ID: ${newId}. Вам начислен 1 Гугол GC!`);
+                alert(`Аккаунт создан! Ваш ID: ${newId}. Вам начислено 1000 GC!`);
                 loginSuccess(username, newId);
             }
         }
@@ -289,8 +276,10 @@
             const usersDB = JSON.parse(localStorage.getItem("neon_users")) || {};
             const user = usersDB[username];
             
-            // Принудительно выдаем 1 Гугол всем, чтобы хватило на любые рандомные цены
-            user.balance = 1e100; 
+            // СБРОС БАЛАНСА ДЛЯ ТЕСТА (если у тебя остался Гугол со старой версии)
+            if (user.balance > 10000) {
+                user.balance = 1000;
+            }
             
             if (!user.ownedSkins) user.ownedSkins = [];
             if (!user.activeSkin) user.activeSkin = "Стандартный";
@@ -299,17 +288,7 @@
             document.getElementById("auth-screen").classList.add("hidden");
             document.getElementById("game-screen").style.display = "flex";
             
-            // Генерируем новые цены при входе
-            generateNewPrices();
-
             updateUI(username, user);
-        }
-
-        // Генерация цен для каждого скина при заходе
-        function generateNewPrices() {
-            shopItems.forEach(item => {
-                currentPrices[item.id] = getRandomPrice();
-            });
         }
 
         function updateUI(username, user) {
@@ -331,22 +310,20 @@
                         <div style="height:130px; background:#222; display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:10px; color:#666;">
                             Пусто
                         </div>
-                        <div>Купи скин!</div>
+                        <div>Купи свой первый дом!</div>
                     </div>
                 `;
                 return;
             }
 
-            user.ownedSkins.forEach(skinName => {
-                const item = shopItems.find(i => i.name === skinName);
+            user.ownedSkins.forEach(houseName => {
+                const item = shopItems.find(i => i.name === houseName);
                 if (item) {
-                    // Берем цену, за которую он был куплен (или текущую)
-                    const priceToShow = currentPrices[item.id] || 0; 
                     container.innerHTML += `
                         <div class="inventory-card">
-                            <img src="${item.img}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/200x130/1a0033/00f2fe?text=No+Image'">
+                            <img src="${item.img}" alt="${item.name}" onerror="this.src='${item.fallbackImg || 'https://via.placeholder.com/200x130/1a0033/00f2fe?text=No+Image'}'">
                             <div>${item.name}</div>
-                            <div class="price-tag">${formatNumber(priceToShow)} GC</div>
+                            <div class="price-tag">Куплено</div>
                         </div>
                     `;
                 }
@@ -360,8 +337,6 @@
 
         // --- МАГАЗИН ---
         function openShop() {
-            // При каждом открытии магазина генерируем новые рандомные цены
-            generateNewPrices();
             renderShop();
             document.getElementById("shop-modal").style.display = "flex";
         }
@@ -379,18 +354,17 @@
             const user = usersDB[currentUser.username];
 
             shopItems.forEach(item => {
-                const price = currentPrices[item.id];
                 const isOwned = user.ownedSkins.includes(item.name);
                 const isActive = user.activeSkin === item.name;
 
                 grid.innerHTML += `
                     <div class="shop-item">
-                        <img src="${item.img}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/200x150/1a0033/00f2fe?text=No+Image'">
+                        <img src="${item.img}" alt="${item.name}" onerror="this.src='${item.fallbackImg || 'https://via.placeholder.com/200x150/1a0033/00f2fe?text=No+Image'}'">
                         <h3>${item.name}</h3>
-                        <div class="price">${formatNumber(price)} GC</div>
-                        <button class="buy-skin-btn" onclick="buySkin('${item.name}', ${price})" 
+                        <div class="price">${formatNumber(item.price)} GC</div>
+                        <button class="buy-skin-btn" onclick="buySkin('${item.name}', ${item.price})" 
                             ${isActive ? 'disabled style="background:#555; cursor:not-allowed;"' : ''}>
-                            ${isActive ? 'Активен' : (isOwned ? 'Выбрать' : 'Купить')}
+                            ${isActive ? 'Выбран' : (isOwned ? 'Выбрать' : 'Купить')}
                         </button>
                     </div>
                 `;
@@ -411,10 +385,9 @@
             }
 
             if (user.balance < price) {
-                return alert("Недостаточно средств!");
+                return alert("Недостаточно средств! Нужно " + formatNumber(price) + " GC.");
             }
 
-            // Покупка
             user.balance -= price;
             user.ownedSkins.push(skinName);
             user.activeSkin = skinName;
