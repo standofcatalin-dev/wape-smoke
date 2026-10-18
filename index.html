@@ -51,37 +51,37 @@
 
         /* --- ИГРОВОЙ ЭКРАН --- */
         #game-screen {
-            display: none; /* Появится после входа */
+            display: none; 
             flex-direction: column; justify-content: center; align-items: center; height: 100vh;
             position: relative;
         }
         
-        /* Блок игрока (Ник, ID, Баланс) */
+        /* Блок игрока (Ник, ID, Баланс) — сделал его более заметным */
         .user-info { 
             position: absolute; top: 20px; right: 20px; 
             display: flex; flex-direction: column; align-items: flex-end;
+            z-index: 100;
         }
         .player-stats {
-            background: rgba(10, 10, 15, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(0, 242, 254, 0.3);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+            background: rgba(20, 20, 30, 0.9);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #ffd700; /* Золотая рамка */
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); /* Золотое свечение */
             margin-bottom: 10px;
-            backdrop-filter: blur(5px);
             text-align: right;
             font-size: 0.9rem;
         }
         .player-stats span { color: #00f2fe; font-weight: bold; text-shadow: 0 0 10px #00f2fe; }
         
         .balance-box {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 215, 0, 0.3);
             color: #ffd700;
             font-weight: bold;
-            font-size: 1.1rem;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            font-size: 1.2rem;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
         }
         #display-balance { color: #fff; text-shadow: 0 0 8px #ffd700; }
         
@@ -129,7 +129,7 @@
                 <div>Игрок: <span id="display-name">...</span></div>
                 <div>ID: <span id="display-id">...</span></div>
                 <div class="balance-box">
-                    💰 Баланс: <span id="display-balance">0.00</span> GC
+                    💰 Баланс: <span id="display-balance">Загрузка...</span> GC
                 </div>
             </div>
             <button class="btn-logout" onclick="logout()">Выйти</button>
@@ -145,10 +145,9 @@
         
         let isLoginMode = true; 
 
-        // Функция для красивого отображения чисел (если число больше миллиарда, показываем e+...)
+        // Функция для красивого отображения чисел
         function formatNumber(num) {
             if (num >= 1e6) {
-                // Превращает 1e100 в красивую строку "1e+100"
                 return num.toExponential(2); 
             }
             return num.toFixed(2);
