@@ -95,23 +95,12 @@
         /* Кнопка магазина по центру */
         .shop-btn-center {
             background: linear-gradient(90deg, #00f2fe, #4facfe);
-            color: #000;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-weight: 900;
-            font-size: 1.2rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
-            transition: 0.3s;
-            margin-top: 20px;
+            color: #000; border: none; padding: 15px 40px; border-radius: 30px;
+            font-weight: 900; font-size: 1.2rem; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.6); transition: 0.3s; margin-top: 20px;
         }
-        .shop-btn-center:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px rgba(0, 242, 254, 1);
-        }
+        .shop-btn-center:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(0, 242, 254, 1); }
 
         /* Центральный текст игры */
         h1 { 
@@ -119,7 +108,22 @@
             text-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe, 0 0 40px #ff2e63; 
             margin-bottom: 20px;
         }
+
+        /* Витрина купленных скинов (Главное меню) */
+        #inventory-display {
+            display: flex; gap: 20px; margin-top: 20px; justify-content: center;
+        }
+        .inventory-card {
+            background: rgba(0,0,0,0.6); border: 2px solid #ffd700; border-radius: 10px;
+            padding: 15px; text-align: center; width: 180px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            animation: popIn 0.5s ease;
+        }
+        .inventory-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+        .inventory-card .price-tag { color: #00f2fe; font-weight: bold; font-size: 1.1rem; }
         
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
         /* --- МАГАЗИН (МОДАЛЬНОЕ ОКНО) --- */
         #shop-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -167,7 +171,6 @@
     <div id="auth-screen">
         <div class="auth-box">
             <h2 id="auth-title">Вход в игру</h2>
-            
             <div class="input-group">
                 <label>Ваш Никнейм</label>
                 <input type="text" id="username" placeholder="Введите ник" autocomplete="off">
@@ -176,7 +179,6 @@
                 <label>Пароль</label>
                 <input type="password" id="password" placeholder="Введите пароль">
             </div>
-
             <button class="btn btn-primary" id="main-btn" onclick="handleAuth()">Войти</button>
             <button class="btn btn-secondary" id="switch-btn" onclick="toggleAuthMode()">У меня нет аккаунта (Регистрация)</button>
         </div>
@@ -184,23 +186,24 @@
 
     <!-- ЭКРАН 2: САМА ИГРА -->
     <div id="game-screen">
-        <!-- Информация об игроке -->
         <div class="user-info">
             <div class="player-stats">
                 <div>Игрок: <span id="display-name">...</span></div>
                 <div>ID: <span id="display-id">...</span></div>
                 <div class="balance-box">
-                    💰 Баланс: <span id="display-balance">Загрузка...</span> GC
+                    💰 Баланс: <span id="display-balance">0</span> GC
                 </div>
             </div>
             <button class="btn-logout" onclick="logout()">Выйти</button>
         </div>
         
-        <!-- Центральная часть -->
         <h1>Neon Game</h1>
-        <p style="color:#aaa; margin-bottom: 10px;">Твой текущий скин: <span id="current-skin-name" style="color:#00f2fe; font-weight:bold;">Стандартный</span></p>
         
-        <!-- Кнопка магазина прямо по центру -->
+        <!-- Витрина с купленными скинами -->
+        <div id="inventory-display">
+            <p style="color:#666;">Загрузка твоих скинов...</p>
+        </div>
+
         <button class="shop-btn-center" onclick="openShop()">🛒 Магазин скинов</button>
     </div>
 
@@ -209,26 +212,23 @@
         <div class="shop-content">
             <span class="close-shop" onclick="closeShop()">✖</span>
             <h2>Неоновый Магазин</h2>
-            <div class="shop-grid" id="shop-grid">
-                <!-- Сюда JS сгенерирует товары -->
-            </div>
+            <div class="shop-grid" id="shop-grid"></div>
         </div>
     </div>
 
     <script>
-        // --- БАЗА ДАННЫХ МАГАЗИНА ---
+        // --- БАЗА ДАННЫХ МАГАЗИНА (ЦЕНЫ И КАРТИНКИ) ---
         const shopItems = [
-            { id: "skin1", name: "Скин 1 (Ф)", price: 5e99, img: "ф.jpg" },
-            { id: "skin2", name: "Скин 2 (Ы)", price: 2e100, img: "ы.jpg" },
-            { id: "skin3", name: "Скин 3 (А)", price: 5e100, img: "a.jpg" }
+            { id: "skin1", name: "Скин 1 (Ф)", price: 100, img: "ф.jpg" },
+            { id: "skin2", name: "Скин 2 (Ы)", price: 500, img: "ы.jpg" },
+            { id: "skin3", name: "Скин 3 (А)", price: 1000, img: "a.jpg" }
         ];
 
         let isLoginMode = true; 
 
-        // Форматирование чисел
         function formatNumber(num) {
             if (num >= 1e6) return num.toExponential(2); 
-            return num.toFixed(2);
+            return num.toFixed(0); // Убираем копейки для обычных чисел
         }
 
         // --- АВТОРИЗАЦИЯ ---
@@ -257,15 +257,16 @@
                 let newId = Date.now().toString().slice(-10);
                 if (Object.values(usersDB).some(u => u.id === newId)) newId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
                 
+                // СТАРТОВЫЙ БАЛАНС - 1500 GC
                 usersDB[username] = { 
                     password: password, 
                     id: newId, 
-                    balance: 1e100,
+                    balance: 1500, 
                     ownedSkins: [],
                     activeSkin: "Стандартный" 
                 };
                 localStorage.setItem("neon_users", JSON.stringify(usersDB));
-                alert(`Аккаунт создан! Ваш ID: ${newId}`);
+                alert(`Аккаунт создан! Ваш ID: ${newId}. Вам начислено 1500 GC!`);
                 loginSuccess(username, newId);
             }
         }
@@ -275,7 +276,9 @@
             const usersDB = JSON.parse(localStorage.getItem("neon_users")) || {};
             const user = usersDB[username];
             
-            if (user.balance === undefined) user.balance = 1e100;
+            // Сброс старого баланса (если у тебя был Гугол) на 1500 для теста
+            if (user.balance > 10000) user.balance = 1500; 
+            
             if (!user.ownedSkins) user.ownedSkins = [];
             if (!user.activeSkin) user.activeSkin = "Стандартный";
             localStorage.setItem("neon_users", JSON.stringify(usersDB));
@@ -290,7 +293,41 @@
             document.getElementById("display-name").innerText = username;
             document.getElementById("display-id").innerText = user.id;
             document.getElementById("display-balance").innerText = formatNumber(user.balance);
-            document.getElementById("current-skin-name").innerText = user.activeSkin;
+            
+            renderInventory(user);
+        }
+
+        // --- ВИТРИНА В ГЛАВНОМ МЕНЮ ---
+        function renderInventory(user) {
+            const container = document.getElementById("inventory-display");
+            container.innerHTML = "";
+
+            // Если скинов нет, показываем стандартный
+            if (user.ownedSkins.length === 0) {
+                container.innerHTML = `
+                    <div class="inventory-card">
+                        <div style="height:120px; background:#222; display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:10px;">
+                            Стандарт
+                        </div>
+                        <div>Твой скин</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Показываем все купленные скины
+            user.ownedSkins.forEach(skinName => {
+                const item = shopItems.find(i => i.name === skinName);
+                if (item) {
+                    container.innerHTML += `
+                        <div class="inventory-card">
+                            <img src="${item.img}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/180x120/1a0033/00f2fe?text=No+Image'">
+                            <div>${item.name}</div>
+                            <div class="price-tag">${formatNumber(item.price)} GC</div>
+                        </div>
+                    `;
+                }
+            });
         }
 
         function logout() {
@@ -348,7 +385,7 @@
             }
 
             if (user.balance < price) {
-                return alert("Недостаточно средств!");
+                return alert("Недостаточно средств! Нужно " + formatNumber(price) + " GC.");
             }
 
             user.balance -= price;
