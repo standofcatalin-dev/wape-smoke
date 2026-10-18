@@ -4,15 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neon Game</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            overflow: hidden; 
+            height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(-45deg, #0a0a0f, #1a0033, #001a33, #0d001a, #000000);
+            background-size: 400% 400%;
+            animation: neonBackground 12s ease infinite;
+        }
+        @keyframes neonBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+        h1 {
+            font-size: 4rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-weight: 900;
+            text-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe, 0 0 40px #ff2e63, 0 0 80px #ff2e63;
+            animation: pulseText 2s infinite alternate;
+        }
+        @keyframes pulseText {
+            from { opacity: 0.8; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.05); }
+        }
+    </style>
 </head>
 <body>
-
-    <!-- Сюда мы будем добавлять элементы игры на следующих шагах -->
     <div class="game-area">
         <h1>Neon Game</h1>
         <p>Шаг 1: Фон готов</p>
     </div>
-
 </body>
 </html>
