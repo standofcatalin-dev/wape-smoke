@@ -1,158 +1,65 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+/* Сброс стандартных отступов */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
-  background: #0a0a0f;
-  color: #fff;
-  min-height: 100vh;
-  padding-bottom: 100px;
+    /* Убираем полосы прокрутки */
+    overflow: hidden; 
+    height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    
+    /* --- МАГИЯ НЕОНОВОГО ФОНА --- */
+    /* Создаем градиент из 4 цветов */
+    background: linear-gradient(-45deg, #0a0a0f, #1a0033, #001a33, #0d001a, #000000);
+    background-size: 400% 400%; /* Растягиваем его, чтобы было куда двигаться */
+    animation: neonBackground 12s ease infinite; /* Запускаем анимацию */
 }
 
-header { text-align: center; padding: 30px 0 10px; }
-.logo { font-size: 2.5rem; background: linear-gradient(90deg, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.logo span { color: #ff2e63; -webkit-text-fill-color: #ff2e63; }
-.logo small { font-size: 1rem; color: #888; -webkit-text-fill-color: #888; }
-
-/* Фильтры */
-.filters {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  padding: 20px;
-}
-.filter-btn {
-  padding: 10px 20px;
-  border: 2px solid #333;
-  background: transparent;
-  color: #fff;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.filter-btn:hover, .filter-btn.active {
-  border-color: #00f2fe;
-  box-shadow: 0 0 15px #00f2fe, 0 0 30px rgba(0,242,254,0.3);
-  color: #00f2fe;
+/* Анимация переливания */
+@keyframes neonBackground {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-/* Сетка товаров */
-.products {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  padding: 20px 40px;
+/* --- СТИЛИ ДЛЯ КОНТЕНТА (для проверки) --- */
+.game-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
 }
 
-.product-card {
-  background: #14141f;
-  border-radius: 15px;
-  padding: 15px;
-  text-align: center;
-  border: 1px solid #222;
-  transition: all 0.3s ease;
-  opacity: 1;
-  transform: scale(1);
+h1 {
+    font-size: 4rem;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    font-weight: 900;
+    
+    /* Неоновое свечение текста */
+    text-shadow: 
+        0 0 10px #00f2fe,
+        0 0 20px #00f2fe,
+        0 0 40px #ff2e63,
+        0 0 80px #ff2e63;
+        
+    animation: pulseText 2s infinite alternate;
 }
 
-/* 🔥 Hover-эффект с неоном */
-.product-card:hover {
-  border-color: #00f2fe;
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.6),
-              0 0 40px rgba(255, 46, 99, 0.2);
-  transform: translateY(-5px);
-}
-.product-card:hover img {
-  transform: scale(1.05);
+p {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #a0a0b0;
+    letter-spacing: 2px;
 }
 
-.product-card img {
-  width: 100%;
-  height: 200px;
-  object-fit: contain;
-  transition: transform 0.4s ease;
+/* Пульсация текста */
+@keyframes pulseText {
+    from { opacity: 0.8; transform: scale(1); }
+    to { opacity: 1; transform: scale(1.05); }
 }
-
-.product-card h3 {
-  font-size: 1rem;
-  margin: 10px 0 5px;
-  min-height: 48px;
-}
-.product-card .category {
-  color: #888;
-  font-size: 0.8rem;
-  margin-bottom: 10px;
-}
-
-.buy-btn {
-  background: linear-gradient(90deg, #00f2fe, #4facfe);
-  border: none;
-  color: #000;
-  padding: 10px 20px;
-  border-radius: 25px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-.buy-btn:hover {
-  box-shadow: 0 0 20px #00f2fe;
-  transform: scale(1.05);
-}
-
-/* Анимация скрытия при фильтрации */
-.product-card.hidden {
-  opacity: 0;
-  transform: scale(0.8);
-  pointer-events: none;
-  position: absolute;
-  visibility: hidden;
-}
-
-/* Корзина */
-.cart-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: linear-gradient(90deg, #ff2e63, #ff7b00);
-  color: #fff;
-  padding: 15px 25px;
-  border-radius: 50px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  box-shadow: 0 0 25px rgba(255, 46, 99, 0.5);
-  z-index: 100;
-}
-.cart-btn:hover { transform: scale(1.05); }
-
-.cart-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 200;
-}
-.cart-modal.open { display: flex; }
-
-.cart-content {
-  background: #14141f;
-  padding: 30px;
-  border-radius: 15px;
-  width: 90%;
-  max-width: 500px;
-  border: 1px solid #00f2fe;
-  box-shadow: 0 0 40px rgba(0,242,254,0.3);
-}
-.cart-content h2 { margin-bottom: 20px; }
-.cart-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; }
-.checkout, .close {
-  width: 100%;
-  padding: 12px;
-  margin-top: 15px;
-  border-radius: 10px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
-.checkout { background: linear-gradient(90deg, #00f2fe, #4facfe); color: #000; }
-.close { background: #333; color: #fff; }
