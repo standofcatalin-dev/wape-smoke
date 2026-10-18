@@ -85,14 +85,33 @@
         }
         #display-balance { color: #fff; text-shadow: 0 0 8px #ffd700; }
         
-        .btn-logout, .btn-shop { 
+        .btn-logout { 
             background: transparent; border: 1px solid #555; color: #aaa; 
             padding: 8px 15px; border-radius: 5px; cursor: pointer; 
-            font-size: 0.9rem; transition: 0.3s; margin-bottom: 5px; width: 100%;
+            font-size: 0.9rem; transition: 0.3s;
         }
-        .btn-shop { border-color: #00f2fe; color: #00f2fe; }
-        .btn-shop:hover { background: rgba(0,242,254,0.1); box-shadow: 0 0 15px rgba(0,242,254,0.4); }
         .btn-logout:hover { border-color: #ff2e63; color: #ff2e63; box-shadow: 0 0 10px rgba(255,46,99,0.3); }
+
+        /* Кнопка магазина по центру */
+        .shop-btn-center {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+        .shop-btn-center:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(0, 242, 254, 1);
+        }
 
         /* Центральный текст игры */
         h1 { 
@@ -174,13 +193,15 @@
                     💰 Баланс: <span id="display-balance">Загрузка...</span> GC
                 </div>
             </div>
-            <button class="btn-shop" onclick="openShop()">🛒 Магазин скинов</button>
             <button class="btn-logout" onclick="logout()">Выйти</button>
         </div>
         
         <!-- Центральная часть -->
         <h1>Neon Game</h1>
-        <p style="color:#aaa;">Твой текущий скин: <span id="current-skin-name" style="color:#00f2fe;">Стандартный</span></p>
+        <p style="color:#aaa; margin-bottom: 10px;">Твой текущий скин: <span id="current-skin-name" style="color:#00f2fe; font-weight:bold;">Стандартный</span></p>
+        
+        <!-- Кнопка магазина прямо по центру -->
+        <button class="shop-btn-center" onclick="openShop()">🛒 Магазин скинов</button>
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО МАГАЗИНА -->
@@ -196,7 +217,6 @@
 
     <script>
         // --- БАЗА ДАННЫХ МАГАЗИНА ---
-        // Твои загруженные картинки: ф.jpg, ы.jpg, a.jpg
         const shopItems = [
             { id: "skin1", name: "Скин 1 (Ф)", price: 5e99, img: "ф.jpg" },
             { id: "skin2", name: "Скин 2 (Ы)", price: 2e100, img: "ы.jpg" },
@@ -205,7 +225,7 @@
 
         let isLoginMode = true; 
 
-        // Форматирование чисел (Гуголы и т.д.)
+        // Форматирование чисел
         function formatNumber(num) {
             if (num >= 1e6) return num.toExponential(2); 
             return num.toFixed(2);
@@ -240,8 +260,8 @@
                 usersDB[username] = { 
                     password: password, 
                     id: newId, 
-                    balance: 1e100, // 1 Гугол
-                    ownedSkins: [], // Купленные скины
+                    balance: 1e100,
+                    ownedSkins: [],
                     activeSkin: "Стандартный" 
                 };
                 localStorage.setItem("neon_users", JSON.stringify(usersDB));
@@ -319,7 +339,6 @@
             const currentUser = JSON.parse(localStorage.getItem("neon_currentUser"));
             const user = usersDB[currentUser.username];
 
-            // Если скин уже куплен, просто надеваем его
             if (user.ownedSkins.includes(skinName)) {
                 user.activeSkin = skinName;
                 localStorage.setItem("neon_users", JSON.stringify(usersDB));
@@ -328,12 +347,10 @@
                 return;
             }
 
-            // Если не куплен — проверяем баланс
             if (user.balance < price) {
-                return alert("Недостаточно средств! У тебя не хватает Гуголов.");
+                return alert("Недостаточно средств!");
             }
 
-            // Покупка
             user.balance -= price;
             user.ownedSkins.push(skinName);
             user.activeSkin = skinName;
@@ -344,7 +361,6 @@
             renderShop();
         }
 
-        // Загрузка при старте
         window.onload = () => {
             const currentUser = JSON.parse(localStorage.getItem("neon_currentUser"));
             if (currentUser) {
